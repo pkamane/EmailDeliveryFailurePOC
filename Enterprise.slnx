@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Infra/" />
+  <Folder Name="/Infra/Kafka/">
+    <File Path="infra/kafka/docker-compose.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Enterprise.Console/Enterprise.Console.csproj" />
+  </Folder>
+</Solution>

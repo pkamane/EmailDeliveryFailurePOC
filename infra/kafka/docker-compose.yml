@@ -1,0 +1,64 @@
+services:
+  kafka:
+    image: apache/kafka:3.8.0
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # Unique ID of this broker/controller node within the cluster. Any single-node
+      # cluster just needs one fixed value.
+      KAFKA_NODE_ID: 1
+
+      # In KRaft mode, a node can act as a message broker, a metadata/controller node
+      # (the ZooKeeper replacement), or both. For a single-node POC, this node does both.
+      KAFKA_PROCESS_ROLES: broker,controller
+
+      # Sockets Kafka listens on *inside* the container. PLAINTEXT (9092) serves normal
+      # client traffic (producers/consumers). CONTROLLER (29093) is used only for
+      # KRaft metadata/consensus traffic between controller nodes.
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:29093
+
+      # The address Kafka tells clients to use when connecting. This is what actually
+      # ends up in the responses Kafka sends back to producers/consumers, so it must be
+      # an address reachable by whoever is connecting. "localhost:9092" works both for
+      # apps on the Windows host (via the published port) and for CLI tools run with
+      # `docker exec` inside this same container.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+
+      # Maps each listener name above to a security protocol. Everything is PLAINTEXT
+      # (no TLS/SASL) since this is a local POC.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+      # Tells Kafka which listener name is used for KRaft controller traffic.
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # The KRaft controller quorum: "<node-id>@<host>:<controller-port>" for every
+      # controller node. With one node, it just points at itself via the Docker
+      # network's hostname (set above).
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+
+      # Which listener brokers use to talk to each other. Irrelevant with only one
+      # broker, but Kafka requires it to be set.
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # Where Kafka stores its log segments (the actual message data) inside the
+      # container. Mapped to the named volume below for persistence.
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+
+      # Replication factor for Kafka's internal topics (consumer offsets, transaction
+      # state). Must be 1 here because there is only one broker — the defaults (3)
+      # would fail to create these topics and the cluster would look broken.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      # Require topics to be created explicitly (see step D below) instead of being
+      # silently auto-created the first time something references them.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    restart: unless-stopped
+
+volumes:
+  kafka-data:

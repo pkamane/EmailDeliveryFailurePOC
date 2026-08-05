@@ -1,0 +1,27 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Test results
+[Tt]est[Rr]esult*/
+
+# Local, per-environment secrets - never commit real credentials.
+# Tracked *.example templates show the expected shape instead.
+src/Enterprise.Console/appsettings.Development.json
+src/Enterprise.Console/appsettings.Production.json
